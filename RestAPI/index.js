@@ -5,7 +5,7 @@ const users = require("./MOCK_DATA.json");
 const app = express();
 const PORT = 8000;
 
-//Middlewares
+//middlewares
 app.use(express.urlencoded({ extended: false }));
 
 //routes 
@@ -30,23 +30,29 @@ app.post('/api/users', (req, res) => {
         return res.json({
             status: "success", id: users.length
         });
-        });
+    });
 });
 
 app.route("/api/users/:id").get((req, res) => {
     const id = Number(req.params.id);
     const user = users.find((user) => user.id === id);
+    if(!user) return res.status(404).json({message: 'user not found'});
     return res.json(user);
 }).patch((req, res) => {
     //edit users
-    return res.json({
-        status: "pending"
-    });
+    const id = Number(req.params.id);
+    const user = users.find((user)=>user.id==id);
+    if(!user) return res.status(404).json({message: 'user not found'});
+    const body = req.body;
+    users.push({...body});
+    //?????????????????????????????????
+    
+    return res.json(user);
 }).delete((req, res) => {
     //delete user with id
-    return res.json({
-        status: "pending"
-    });
+    const body= req.body;
+    users.delete({...body,}) //?????????????????????????????????/
+    return res.json(body);
 });
 
 app.listen(PORT, () => console.log(`Server at PORT 8000`));
