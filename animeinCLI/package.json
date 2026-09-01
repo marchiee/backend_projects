@@ -1,0 +1,18 @@
+{
+  "name": "animeincli",
+  "version": "1.0.0",
+  "bin": {
+    "anime": "./bin/index.js"
+  },
+  "scripts": {
+    "start": "node ./bin/index.js"
+  },
+  "keywords": [
+    "anime",
+    "cli"
+  ],
+  "author": "marchiee",
+  "license": "MIT",
+  "description": "A CLI for discovering anime and finding where to watch them",
+  "type":"module"
+}
