@@ -25,7 +25,7 @@ app.get("/users", (req, res) => {
 app.post('/api/users', (req, res) => {
     //create new users
     const body = req.body;
-    users.push({ ...body,id: users.length + 1 });
+    users.push({ ...body, id: users.length + 1 });
     fs.writeFile('./MOCK_DATA.json', JSON.stringify(users), (err, data) => {
         return res.json({
             status: "success", id: users.length
@@ -36,23 +36,33 @@ app.post('/api/users', (req, res) => {
 app.route("/api/users/:id").get((req, res) => {
     const id = Number(req.params.id);
     const user = users.find((user) => user.id === id);
-    if(!user) return res.status(404).json({message: 'user not found'});
+    if (!user) return res.status(404).json({ message: 'user not found' });
     return res.json(user);
 }).patch((req, res) => {
-    //edit users
     const id = Number(req.params.id);
-    const user = users.find((user)=>user.id==id);
-    if(!user) return res.status(404).json({message: 'user not found'});
-    const body = req.body;
-    users.push({...body});
-    //?????????????????????????????????
-    
-    return res.json(user);
+    const userIndex = users.findIndex((user) => user.id === id);
+
+    if (userIndex === -1) {
+        return res.status(404).json({ message: 'user not found' });
+    }
+    users[userIndex] = { ...users[userIndex], ...req.body }; // to merge the existing user data with the new data from req.body
+    fs.writeFile('./MOCK_DATA.json', JSON.stringify(users), (err, data) => {     //to save changes to MOCK_DATA.json
+        if (err) return res.status(500).json({ message: 'Error saving data' });
+        return res.json({ status: "success", user: users[userIndex] });
+    });
 }).delete((req, res) => {
-    //delete user with id
-    const body= req.body;
-    users.delete({...body,}) //?????????????????????????????????/
-    return res.json(body);
+    const id = Number(req.params.id);
+    const userIndex = users.findIndex((user) => user.id === id);
+
+    if (userIndex === -1) {
+        return res.status(404).json({ message: 'user not found' });
+    }
+
+    const deletedUser = users.splice(userIndex, 1)[0]; // to remove the user from the array
+    fs.writeFile('./MOCK_DATA.json', JSON.stringify(users), (err, data) => { // which save changes to MOCK_DATA.json
+        if (err) return res.status(500).json({ message: 'Error saving data' });
+        return res.json({ status: "success", deleted: deletedUser });
+    });
 });
 
 app.listen(PORT, () => console.log(`Server at PORT 8000`));
