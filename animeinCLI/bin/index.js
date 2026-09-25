@@ -1,8 +1,7 @@
-#!/usr/bin/env mode
-
-//upper line is called a shebang, which tells systems that this file should be executed using Node.js.
+#!/usr/bin/env node
 
 import { askQuestion } from "../src/ui/prompts.js";
+import { searchAnime } from "../src/api/animeApi.js";
 
 console.log("");
 console.log("===================================");
@@ -13,4 +12,49 @@ console.log("");
 const anime = await askQuestion("Which anime are you looking for? ");
 
 console.log("");
-console.log(`You searched for: ${anime}`);
+console.log("Searching...");
+
+try {
+  const results = await searchAnime(anime);
+
+  console.log("");
+
+  if (results.length === 0) {
+    console.log("No anime found.");
+    process.exit(0);
+  }
+
+  const displayedResults = results.slice(0, 5);
+
+  console.log(`Found ${results.length} results.`);
+  console.log("");
+
+  displayedResults.forEach((anime, index) => {
+    console.log(`${index + 1}. ${anime.title}`);
+  });
+
+  console.log("");
+
+  const choice = await askQuestion("Which one do you want? ");
+
+  const selectedIndex = Number(choice);
+
+  if (
+    !Number.isInteger(selectedIndex) ||
+    selectedIndex < 1 ||
+    selectedIndex > displayedResults.length
+  ) {
+    console.log("");
+    console.log("Invalid choice.");
+    process.exit(0);
+  }
+
+  const selectedAnime = displayedResults[selectedIndex - 1];
+
+  console.log("");
+  console.log(`You selected: ${selectedAnime.title}`);
+} catch (error) {
+  console.log("");
+  console.log("Something went wrong while searching.");
+  console.error(error.message);
+}
