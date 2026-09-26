@@ -1,6 +1,6 @@
 const query = `
   query ($search: String) {
-    Page(perPage: 5) {
+    Page(perPage: 10) {
       media(search: $search, type: ANIME) {
         id
         title {
@@ -8,6 +8,21 @@ const query = `
           english
           native
         }
+        averageScore
+        episodes
+        status
+        startDate {
+          year
+          month
+          day
+        }
+        endDate {
+          year
+          month
+          day
+        }
+        genres
+        description
       }
     }
   }
