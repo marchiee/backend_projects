@@ -1,4 +1,4 @@
-const query = `
+const searchQuery = `
   query ($search: String) {
     Page(perPage: 10) {
       media(search: $search, type: ANIME) {
@@ -8,21 +8,43 @@ const query = `
           english
           native
         }
-        averageScore
-        episodes
-        status
         startDate {
           year
-          month
-          day
         }
-        endDate {
-          year
-          month
-          day
-        }
-        genres
-        description
+      }
+    }
+  }
+`;
+
+const detailsQuery = `
+  query ($id: Int) {
+    Media(id: $id, type: ANIME) {
+      id
+      title {
+        romaji
+        english
+        native
+      }
+      averageScore
+      episodes
+      status
+      startDate {
+        year
+        month
+        day
+      }
+      endDate {
+        year
+        month
+        day
+      }
+      genres
+      description
+      streamingEpisodes {
+        title
+        url
+        site
+        thumbnail
       }
     }
   }
@@ -36,7 +58,7 @@ export async function searchAnime(search) {
       Accept: "application/json",
     },
     body: JSON.stringify({
-      query,
+      query: searchQuery,
       variables: {
         search,
       },
@@ -50,4 +72,28 @@ export async function searchAnime(search) {
   const result = await response.json();
 
   return result.data.Page.media;
+}
+
+export async function getAnimeDetails(id) {
+  const response = await fetch("https://graphql.anilist.co", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query: detailsQuery,
+      variables: {
+        id,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  return result.data.Media;
 }

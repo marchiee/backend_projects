@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { askQuestion } from "../src/ui/prompts.js";
-import { searchAnime } from "../src/api/animeApi.js";
+import { searchAnime, getAnimeDetails } from "../src/api/animeApi.js";
 
 console.log("");
 console.log("===================================");
@@ -30,9 +30,11 @@ try {
     console.log("");
 
     displayedResults.forEach((anime, index) => {
-        const title = anime.title.english || anime.title.romaji;
-        console.log(`${index + 1}. ${title}`);
-    });
+    const title = anime.title.english || anime.title.romaji;
+    const year = anime.startDate.year || "Unknown";
+
+    console.log(`${index + 1}. ${title} (${year})`);
+});
 
     console.log("");
 
@@ -53,8 +55,12 @@ try {
     const selectedAnime = displayedResults[selectedIndex - 1];
 
     console.log("");
+    console.log("Getting anime details...");
+
+    const animeDetails = await getAnimeDetails(selectedAnime.id);
+
     const selectedTitle =
-        selectedAnime.title.english || selectedAnime.title.romaji;
+        animeDetails.title.english || animeDetails.title.romaji;
 
     const statusMap = {
         FINISHED: "Finished",
@@ -82,23 +88,28 @@ try {
         return parts.join("-");
     };
 
-    const startDate = formatDate(selectedAnime.startDate);
-    const endDate = formatDate(selectedAnime.endDate);
+    const startDate = formatDate(animeDetails.startDate);
+    const endDate = formatDate(animeDetails.endDate);
 
     const aired =
-        endDate === "Unknown" ? `${startDate} - ?` : `${startDate} - ${endDate}`;
+        endDate === "Unknown"
+            ? `${startDate} - ?`
+            : `${startDate} - ${endDate}`;
 
     const score =
-        selectedAnime.averageScore === null
+        animeDetails.averageScore === null
             ? "Not rated"
-            : `${selectedAnime.averageScore / 10}/10`;
+            : `${animeDetails.averageScore / 10}/10`;
 
-    const episodes = selectedAnime.episodes ?? "Unknown";
+    const episodes = animeDetails.episodes ?? "Unknown";
 
-    const status = statusMap[selectedAnime.status] || selectedAnime.status;
+    const status =
+        statusMap[animeDetails.status] || animeDetails.status;
 
-    const description = selectedAnime.description
-        ? selectedAnime.description.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "")
+    const description = animeDetails.description
+        ? animeDetails.description
+              .replace(/<br\s*\/?>/gi, "\n")
+              .replace(/<[^>]*>/g, "")
         : "No synopsis available.";
 
     console.log("");
@@ -115,15 +126,32 @@ try {
     console.log("");
     console.log("Genres:");
 
-    selectedAnime.genres.forEach((genre) => {
+    animeDetails.genres.forEach((genre) => {
         console.log(`• ${genre}`);
     });
 
     console.log("");
     console.log("Story:");
     console.log(description);
+
+    console.log("");
+    console.log("Where to Watch:");
+
+    if (
+        !animeDetails.streamingEpisodes ||
+        animeDetails.streamingEpisodes.length === 0
+    ) {
+        console.log("No streaming links found.");
+    } else {
+        animeDetails.streamingEpisodes.forEach((episode) => {
+            console.log("");
+            console.log(`▶ ${episode.title}`);
+            console.log(`  ${episode.site}`);
+            console.log(`  ${episode.url}`);
+        });
+    }
 } catch (error) {
     console.log("");
-    console.log("Something went wrong while searching.");
+    console.log("Something went wrong.");
     console.error(error.message);
 }

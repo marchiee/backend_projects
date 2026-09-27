@@ -1,0 +1,61 @@
+                    USER
+                      │
+                      ▼
+              ┌───────────────┐
+              │   Anime CLI   │
+              └───────┬───────┘
+                      │
+              "naruto" / search
+                      │
+                      ▼
+             ┌─────────────────┐
+             │   API REQUEST 1 │
+             │                 │
+             │ AniList Search  │
+             └────────┬────────┘
+                      │
+                id + title
+                      │
+                      ▼
+             ┌─────────────────┐
+             │ Search Results  │
+             │                 │
+             │ 1. Naruto       │
+             │ 2. Naruto ...   │
+             │ 3. ...          │
+             └────────┬────────┘
+                      │
+                 User selects
+                      │
+                 selected ID
+                      │
+                      ▼
+             ┌─────────────────────┐
+             │    API REQUEST 2    │
+             │                     │
+             │ AniList Media(id)   │
+             └──────────┬──────────┘
+                        │
+             ┌──────────┴───────────┐
+             │                      │
+             ▼                      ▼
+      ┌──────────────┐      ┌─────────────────┐
+      │ Anime Details│      │ Legal Streaming │
+      │              │      │    Episodes     │
+      │ • episodes   │      │                 │
+      │ • score      │      │ • site          │
+      │ • status     │      │ • URL           │
+      │ • dates      │      │ • episode title │
+      │ • genres     │      │ • thumbnail     │
+      │ • description│      │                 │
+      └───────┬──────┘      └────────┬────────┘
+              │                      │
+              └──────────┬───────────┘
+                         ▼
+                ┌─────────────────┐
+                │   CLI Output    │
+                │                 │
+                │ Anime Details   │
+                │       +         │
+                │ Where to Watch  │
+                └─────────────────┘
