@@ -4,9 +4,11 @@ import { askQuestion } from "../src/ui/prompts.js";
 import { searchAnime, getAnimeDetails } from "../src/api/animeApi.js";
 
 console.log("");
+
 console.log("===================================");
 console.log("          Anime CLI ^ ^");
 console.log("===================================");
+
 console.log("");
 
 const anime = await askQuestion("Which anime are you looking for? ");
@@ -30,11 +32,11 @@ try {
     console.log("");
 
     displayedResults.forEach((anime, index) => {
-    const title = anime.title.english || anime.title.romaji;
-    const year = anime.startDate.year || "Unknown";
+        const title = anime.title.english || anime.title.romaji;
+        const year = anime.startDate.year || "Unknown";
 
-    console.log(`${index + 1}. ${title} (${year})`);
-});
+        console.log(`${index + 1}. ${title} (${year})`);
+    });
 
     console.log("");
 
@@ -108,14 +110,15 @@ try {
 
     const description = animeDetails.description
         ? animeDetails.description
-              .replace(/<br\s*\/?>/gi, "\n")
-              .replace(/<[^>]*>/g, "")
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/<[^>]*>/g, "")
         : "No synopsis available.";
 
     console.log("");
     console.log("========================================");
     console.log(`${selectedTitle}`);
     console.log("========================================");
+
     console.log("");
 
     console.log(`>> Score: ${score}`);
@@ -124,6 +127,7 @@ try {
     console.log(`>> Aired: ${aired}`);
 
     console.log("");
+
     console.log("Genres:");
 
     animeDetails.genres.forEach((genre) => {
@@ -131,23 +135,25 @@ try {
     });
 
     console.log("");
+
     console.log("Story:");
     console.log(description);
 
     console.log("");
     console.log("Where to Watch:");
 
-    if (
-        !animeDetails.streamingEpisodes ||
-        animeDetails.streamingEpisodes.length === 0
-    ) {
-        console.log("No streaming links found.");
+    const streamingLinks = animeDetails.externalLinks?.filter(
+        (link) => link.type === "STREAMING"
+    ) || [];
+
+    if (streamingLinks.length === 0) {
+        console.log("No streaming platforms found.");
     } else {
-        animeDetails.streamingEpisodes.forEach((episode) => {
+        streamingLinks.forEach((link) => {
             console.log("");
-            console.log(`▶ ${episode.title}`);
-            console.log(`  ${episode.site}`);
-            console.log(`  ${episode.url}`);
+
+            console.log(`▶ ${link.site}`);
+            console.log(`  ${link.url}`);
         });
     }
 } catch (error) {

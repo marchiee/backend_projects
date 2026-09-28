@@ -40,11 +40,11 @@ const detailsQuery = `
       }
       genres
       description
-      streamingEpisodes {
-        title
+
+      externalLinks {
         url
         site
-        thumbnail
+        type
       }
     }
   }
