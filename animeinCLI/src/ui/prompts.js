@@ -1,15 +1,14 @@
-import { resolve } from "node:dns";
-import readline from "node:readline";
+import { input, select } from "@inquirer/prompts";
 
-export function askQuestion(question){
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
-    return new Promise((resolve)=>{
-        rl.question(question,(answer)=>{ //asks question
-            rl.close();
-            resolve(answer);
-        });
-    });
+export async function askQuestion(message) {
+  return await input({
+    message,
+  });
+}
+
+export async function selectOption(message, choices) {
+  return await select({
+    message,
+    choices,
+  });
 }

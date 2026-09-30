@@ -14,5 +14,8 @@
   "author": "marchiee",
   "license": "MIT",
   "description": "A CLI for discovering anime and finding where to watch them",
-  "type":"module"
+  "type": "module",
+  "dependencies": {
+    "@inquirer/prompts": "^8.7.2"
+  }
 }

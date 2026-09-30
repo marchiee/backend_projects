@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
-import { askQuestion } from "../src/ui/prompts.js";
+import { askQuestion, selectOption } from "../src/ui/prompts.js";
 import { searchAnime, getAnimeDetails } from "../src/api/animeApi.js";
 
 console.log("");
 
 console.log("===================================");
-console.log("          Anime CLI ^ ^");
+console.log("           Anime CLI ^ ^");
 console.log("===================================");
 
 console.log("");
 
-const anime = await askQuestion("Which anime are you looking for? ");
+const searchQuery = await askQuestion("Which anime are you looking for? ");
 
 console.log("");
 console.log("Searching...");
 
 try {
-    const results = await searchAnime(anime);
+    const results = await searchAnime(searchQuery);
 
     console.log("");
 
@@ -28,35 +28,21 @@ try {
 
     const displayedResults = results.slice(0, 10);
 
-    console.log(`Found ${results.length} results.`);
+    console.log(`Found ${displayedResults.length} results.`);
     console.log("");
 
-    displayedResults.forEach((anime, index) => {
-        const title = anime.title.english || anime.title.romaji;
-        const year = anime.startDate.year || "Unknown";
-
-        console.log(`${index + 1}. ${title} (${year})`);
-    });
-
-    console.log("");
-
-    const choice = await askQuestion("Which one do you want? ");
-
-    const selectedIndex = Number(choice);
-
-    if (
-        !Number.isInteger(selectedIndex) ||
-        selectedIndex < 1 ||
-        selectedIndex > displayedResults.length
-    ) {
-        console.log("");
-        console.log("Invalid choice.");
-        process.exit(0);
-    }
-
-    const selectedAnime = displayedResults[selectedIndex - 1];
+    const selectedAnime = await selectOption(
+        "Which one do you want?",
+        displayedResults.map((anime, index) => ({
+            name: `${index + 1}. ${
+                anime.title.english || anime.title.romaji
+            } (${anime.startDate.year || "Unknown"})`,
+            value: anime,
+        }))
+    );
 
     console.log("");
+
     console.log("Getting anime details...");
 
     const animeDetails = await getAnimeDetails(selectedAnime.id);
@@ -110,11 +96,12 @@ try {
 
     const description = animeDetails.description
         ? animeDetails.description
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/<[^>]*>/g, "")
+              .replace(/<br\s*\/?>/gi, "\n")
+              .replace(/<[^>]*>/g, "")
         : "No synopsis available.";
 
     console.log("");
+
     console.log("========================================");
     console.log(`${selectedTitle}`);
     console.log("========================================");
@@ -140,18 +127,19 @@ try {
     console.log(description);
 
     console.log("");
+
     console.log("Where to Watch:");
 
-    const streamingLinks = animeDetails.externalLinks?.filter(
-        (link) => link.type === "STREAMING"
-    ) || [];
+    const streamingLinks =
+        animeDetails.externalLinks?.filter(
+            (link) => link.type === "STREAMING"
+        ) || [];
 
     if (streamingLinks.length === 0) {
         console.log("No streaming platforms found.");
     } else {
         streamingLinks.forEach((link) => {
             console.log("");
-
             console.log(`▶ ${link.site}`);
             console.log(`  ${link.url}`);
         });

@@ -59,3 +59,23 @@
                 │       +         │
                 │ Where to Watch  │
                 └─────────────────┘
+
+Next steps:
+
+1. selection menus (done)
+        
+2. will add these in "Main menu"
+        -Search anime
+        -Top anime
+        -Search history
+        -Exit
+        
+3. make each menu option work properly
+        
+4. will add cache
+        
+5. open streaming provider
+        
+6. error handling + UI polish
+        
+7. readme + npm publishing
