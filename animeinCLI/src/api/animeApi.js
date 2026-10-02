@@ -50,6 +50,35 @@ const detailsQuery = `
   }
 `;
 
+
+const topAnimeQuery = `
+    query {
+        Page(perPage: 10) {
+            media(
+                type: ANIME,
+                sort: SCORE_DESC,
+                averageScore_greater: 0
+            ) {
+                id
+                title {
+                    romaji
+                    english
+                    native
+                }
+                averageScore
+                episodes
+                status
+                startDate {
+                    year
+                    month
+                    day
+                }
+            }
+        }
+    }
+`;
+
+
 export async function searchAnime(search) {
   const response = await fetch("https://graphql.anilist.co", {
     method: "POST",
@@ -96,4 +125,26 @@ export async function getAnimeDetails(id) {
   const result = await response.json();
 
   return result.data.Media;
+}
+
+
+export async function getTopAnime() {
+  const response = await fetch("https://graphql.anilist.co", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query: topAnimeQuery,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  return result.data.Page.media;
 }

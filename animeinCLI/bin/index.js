@@ -3,149 +3,192 @@
 import { askQuestion, selectOption } from "../src/ui/prompts.js";
 import { searchAnime, getAnimeDetails } from "../src/api/animeApi.js";
 
-console.log("");
-
-console.log("===================================");
-console.log("           Anime CLI ^ ^");
-console.log("===================================");
-
-console.log("");
-
-const searchQuery = await askQuestion("Which anime are you looking for? ");
-
-console.log("");
-console.log("Searching...");
-
-try {
-    const results = await searchAnime(searchQuery);
+async function searchAnimeFlow() {
+    const searchQuery = await askQuestion("Which anime are you looking for? ");
 
     console.log("");
+    console.log("Searching...");
 
-    if (results.length === 0) {
-        console.log("No anime found.");
-        process.exit(0);
-    }
+    try {
+        const results = await searchAnime(searchQuery);
 
-    const displayedResults = results.slice(0, 10);
+        console.log("");
 
-    console.log(`Found ${displayedResults.length} results.`);
-    console.log("");
-
-    const selectedAnime = await selectOption(
-        "Which one do you want?",
-        displayedResults.map((anime, index) => ({
-            name: `${index + 1}. ${
-                anime.title.english || anime.title.romaji
-            } (${anime.startDate.year || "Unknown"})`,
-            value: anime,
-        }))
-    );
-
-    console.log("");
-
-    console.log("Getting anime details...");
-
-    const animeDetails = await getAnimeDetails(selectedAnime.id);
-
-    const selectedTitle =
-        animeDetails.title.english || animeDetails.title.romaji;
-
-    const statusMap = {
-        FINISHED: "Finished",
-        RELEASING: "Currently Airing",
-        NOT_YET_RELEASED: "Not Yet Released",
-        CANCELLED: "Cancelled",
-        HIATUS: "On Hiatus",
-    };
-
-    const formatDate = (date) => {
-        if (!date.year) {
-            return "Unknown";
+        if (results.length === 0) {
+            console.log("No anime found.");
+            return;
         }
 
-        const parts = [date.year];
+        const displayedResults = results.slice(0, 10);
 
-        if (date.month) {
-            parts.push(String(date.month).padStart(2, "0"));
-        }
+        console.log(`Found ${displayedResults.length} results.`);
+        console.log("");
 
-        if (date.day) {
-            parts.push(String(date.day).padStart(2, "0"));
-        }
+        const selectedAnime = await selectOption(
+            "Which one do you want?",
+            displayedResults.map((anime, index) => ({
+                name: `${index + 1}. ${
+                    anime.title.english || anime.title.romaji
+                } (${anime.startDate.year || "Unknown"})`,
+                value: anime,
+            }))
+        );
 
-        return parts.join("-");
-    };
+        console.log("");
+        console.log("Getting anime details...");
 
-    const startDate = formatDate(animeDetails.startDate);
-    const endDate = formatDate(animeDetails.endDate);
+        const animeDetails = await getAnimeDetails(selectedAnime.id);
 
-    const aired =
-        endDate === "Unknown"
-            ? `${startDate} - ?`
-            : `${startDate} - ${endDate}`;
+        const selectedTitle =
+            animeDetails.title.english || animeDetails.title.romaji;
 
-    const score =
-        animeDetails.averageScore === null
-            ? "Not rated"
-            : `${animeDetails.averageScore / 10}/10`;
+        const statusMap = {
+            FINISHED: "Finished",
+            RELEASING: "Currently Airing",
+            NOT_YET_RELEASED: "Not Yet Released",
+            CANCELLED: "Cancelled",
+            HIATUS: "On Hiatus",
+        };
 
-    const episodes = animeDetails.episodes ?? "Unknown";
+        const formatDate = (date) => {
+            if (!date.year) {
+                return "Unknown";
+            }
 
-    const status =
-        statusMap[animeDetails.status] || animeDetails.status;
+            const parts = [date.year];
 
-    const description = animeDetails.description
-        ? animeDetails.description
-              .replace(/<br\s*\/?>/gi, "\n")
-              .replace(/<[^>]*>/g, "")
-        : "No synopsis available.";
+            if (date.month) {
+                parts.push(String(date.month).padStart(2, "0"));
+            }
 
-    console.log("");
+            if (date.day) {
+                parts.push(String(date.day).padStart(2, "0"));
+            }
 
-    console.log("========================================");
-    console.log(`${selectedTitle}`);
-    console.log("========================================");
+            return parts.join("-");
+        };
 
-    console.log("");
+        const startDate = formatDate(animeDetails.startDate);
+        const endDate = formatDate(animeDetails.endDate);
 
-    console.log(`>> Score: ${score}`);
-    console.log(`>> Episodes: ${episodes}`);
-    console.log(`>> Status: ${status}`);
-    console.log(`>> Aired: ${aired}`);
+        const aired =
+            endDate === "Unknown"
+                ? `${startDate} - ?`
+                : `${startDate} - ${endDate}`;
 
-    console.log("");
+        const score =
+            animeDetails.averageScore === null
+                ? "Not rated"
+                : `${animeDetails.averageScore / 10}/10`;
 
-    console.log("Genres:");
+        const episodes = animeDetails.episodes ?? "Unknown";
 
-    animeDetails.genres.forEach((genre) => {
-        console.log(`• ${genre}`);
-    });
+        const status =
+            statusMap[animeDetails.status] || animeDetails.status;
 
-    console.log("");
+        const description = animeDetails.description
+            ? animeDetails.description
+                  .replace(/<br\s*\/?>/gi, "\n")
+                  .replace(/<[^>]*>/g, "")
+            : "No synopsis available.";
 
-    console.log("Story:");
-    console.log(description);
+        console.log("");
+        console.log("========================================");
+        console.log(`${selectedTitle}`);
+        console.log("========================================");
 
-    console.log("");
+        console.log("");
+        console.log(`>> Score: ${score}`);
+        console.log(`>> Episodes: ${episodes}`);
+        console.log(`>> Status: ${status}`);
+        console.log(`>> Aired: ${aired}`);
 
-    console.log("Where to Watch:");
+        console.log("");
+        console.log("Genres:");
 
-    const streamingLinks =
-        animeDetails.externalLinks?.filter(
-            (link) => link.type === "STREAMING"
-        ) || [];
-
-    if (streamingLinks.length === 0) {
-        console.log("No streaming platforms found.");
-    } else {
-        streamingLinks.forEach((link) => {
-            console.log("");
-            console.log(`▶ ${link.site}`);
-            console.log(`  ${link.url}`);
+        animeDetails.genres.forEach((genre) => {
+            console.log(`• ${genre}`);
         });
+
+        console.log("");
+        console.log("Story:");
+        console.log(description);
+
+        console.log("");
+        console.log("Where to Watch:");
+
+        const streamingLinks =
+            animeDetails.externalLinks?.filter(
+                (link) => link.type === "STREAMING"
+            ) || [];
+
+        if (streamingLinks.length === 0) {
+            console.log("No streaming platforms found.");
+        } else {
+            streamingLinks.forEach((link) => {
+                console.log("");
+                console.log(`- ${link.site}: `);
+                console.log(`  ${link.url}`);
+            });
+        }
+    } catch (error) {
+        console.log("");
+        console.log("Something went wrong.");
+        console.error(error.message);
     }
-} catch (error) {
-    console.log("");
-    console.log("Something went wrong.");
-    console.error(error.message);
 }
+
+async function main() {
+    console.log("");
+    console.log("===================================");
+    console.log("           Anime CLI ^ ^");
+    console.log("===================================");
+
+    while (true) {
+        console.log("");
+
+        const choice = await selectOption(
+            "What would you like to do?",
+            [
+                {
+                    name: "Search anime",
+                    value: "search",
+                },
+                {
+                    name: "Top anime",
+                    value: "top",
+                },
+                {
+                    name: "Search history",
+                    value: "history",
+                },
+                {
+                    name: "Exit",
+                    value: "exit",
+                },
+            ]
+        );
+
+        console.log("");
+
+        switch (choice) {
+            case "search":
+                await searchAnimeFlow();
+                break;
+
+            case "top":
+                console.log("Top anime feature coming soon!");
+                break;
+
+            case "history":
+                console.log("Search history feature coming soon!");
+                break;
+
+            case "exit":
+                console.log("Thanks for using Anime CLI! ^ ^");
+                return;
+        }
+    }
+}
+
+main();
