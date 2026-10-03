@@ -64,18 +64,21 @@ Next steps:
 
 1. selection menus (done)
         
-2. will add these in "Main menu"
+2. will add these in "Main menu" (done)
         -Search anime
         -Top anime
         -Search history
         -Exit
         
-3. make each menu option work properly
+3. make each menu option work properly (done)
         
-4. will add cache
-        
-5. open streaming provider
+4. search history
+
+5. will add cache and connect with history file
         
 6. error handling + UI polish
         
 7. readme + npm publishing
+
+in future : >open streaming provider
+            >add "top anime based on genre"
