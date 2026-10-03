@@ -27,9 +27,8 @@ async function searchAnimeFlow() {
         const selectedAnime = await selectOption(
             "Which one do you want?",
             displayedResults.map((anime, index) => ({
-                name: `${index + 1}. ${
-                    anime.title.english || anime.title.romaji
-                } (${anime.startDate.year || "Unknown"})`,
+                name: `${index + 1}. ${anime.title.english || anime.title.romaji
+                    } (${anime.startDate.year || "Unknown"})`,
                 value: anime,
             }))
         );
@@ -88,8 +87,8 @@ async function searchAnimeFlow() {
 
         const description = animeDetails.description
             ? animeDetails.description
-                  .replace(/<br\s*\/?>/gi, "\n")
-                  .replace(/<[^>]*>/g, "")
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/<[^>]*>/g, "")
             : "No synopsis available.";
 
         console.log("");
@@ -138,6 +137,42 @@ async function searchAnimeFlow() {
     }
 }
 
+
+
+async function topAnimeFlow() {
+    const choice = await selectOption(
+        "What kind of anime list would you like?",
+        [
+            {
+                name: "Top Rated Anime",
+                value: "SCORE_DESC",
+            },
+            {
+                name: "Most Popular Anime",
+                value: "POPULARITY_DESC",
+            },
+            {
+                name: "Currently Trending Anime",
+                value: "TRENDING_DESC",
+            },
+            {
+                name: "Back to Main Menu",
+                value: "back",
+            },
+        ]
+    );
+
+    console.log("");
+
+    if (choice === "back") {
+        return;
+    }
+
+    console.log(`Selected ranking: ${choice}`);
+}
+
+
+
 async function main() {
     console.log("");
     console.log("===================================");
@@ -177,7 +212,7 @@ async function main() {
                 break;
 
             case "top":
-                console.log("Top anime feature coming soon!");
+                await topAnimeFlow();
                 break;
 
             case "history":

@@ -51,13 +51,13 @@ const detailsQuery = `
 `;
 
 
+
 const topAnimeQuery = `
-    query {
+    query ($sort: [MediaSort]) {
         Page(perPage: 10) {
             media(
                 type: ANIME,
-                sort: SCORE_DESC,
-                averageScore_greater: 0
+                sort: $sort
             ) {
                 id
                 title {
@@ -77,6 +77,7 @@ const topAnimeQuery = `
         }
     }
 `;
+
 
 
 export async function searchAnime(search) {
@@ -128,23 +129,30 @@ export async function getAnimeDetails(id) {
 }
 
 
-export async function getTopAnime() {
-  const response = await fetch("https://graphql.anilist.co", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      query: topAnimeQuery,
-    }),
-  });
+export async function getTopAnime(sort) {
+    const response = await fetch("https://graphql.anilist.co", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({
+            query: topAnimeQuery,
+            variables: {
+                sort: [sort],
+            },
+        }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
-  }
+    if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+    }
 
-  const result = await response.json();
+    const result = await response.json();
 
-  return result.data.Page.media;
+    if (result.errors?.length) {
+        throw new Error(result.errors[0].message);
+    }
+
+    return result.data.Page.media;
 }
