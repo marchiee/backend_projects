@@ -2,8 +2,9 @@
 
 import { askQuestion, selectOption } from "../src/ui/prompts.js";
 import { searchAnime, getAnimeDetails, getTopAnime } from "../src/api/animeApi.js";
+import {addToHistory,getSearchHistory } from "../src/storage/history.js";
 
-
+//function to display anime
 
 function displayAnimeDetails(animeDetails) {
     const selectedTitle =
@@ -93,6 +94,8 @@ function displayAnimeDetails(animeDetails) {
     }
 }
 
+//function for anime search
+
 async function searchAnimeFlow() {
     const searchQuery = await askQuestion("Which anime are you looking for? ");
 
@@ -127,6 +130,13 @@ async function searchAnimeFlow() {
         console.log("Getting anime details...");
 
         const animeDetails = await getAnimeDetails(selectedAnime.id);
+
+        await addToHistory({
+            query: searchQuery,
+            animeId: selectedAnime.id,
+            animeTitle:
+                animeDetails.title.english || animeDetails.title.romaji,
+        });
 
         displayAnimeDetails(animeDetails);
     } catch (error) {
@@ -220,6 +230,37 @@ async function topAnimeFlow() {
     }
 }
 
+
+
+
+async function searchHistoryFlow() {
+    try {
+        const history = await getSearchHistory();
+
+        console.log("");
+
+        if (history.length === 0) {
+            console.log("Your search history is empty.");
+            return;
+        }
+
+        console.log("===================================");
+        console.log("           Search History");
+        console.log("===================================");
+        console.log("");
+
+        history.forEach((entry, index) => {
+            console.log(
+                `${index + 1}. ${entry.animeTitle} (Searched: ${entry.query})`
+            );
+            console.log(`   Date: ${new Date(entry.searchedAt).toLocaleString()}`);
+            console.log("");
+        });
+    } catch (error) {
+        console.log("Could not retrieve search history.");
+        console.error(error.message);
+    }
+}
 
 
 async function main() {
