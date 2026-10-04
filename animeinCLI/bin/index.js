@@ -2,7 +2,7 @@
 
 import { askQuestion, selectOption } from "../src/ui/prompts.js";
 import { searchAnime, getAnimeDetails, getTopAnime } from "../src/api/animeApi.js";
-import {addToHistory,getSearchHistory } from "../src/storage/history.js";
+import { addToHistory, getSearchHistory } from "../src/storage/history.js";
 
 //function to display anime
 
@@ -131,12 +131,17 @@ async function searchAnimeFlow() {
 
         const animeDetails = await getAnimeDetails(selectedAnime.id);
 
-        await addToHistory({
-            query: searchQuery,
-            animeId: selectedAnime.id,
-            animeTitle:
-                animeDetails.title.english || animeDetails.title.romaji,
-        });
+        try {
+            await addToHistory({
+                query: searchQuery,
+                animeId: selectedAnime.id,
+                animeTitle:
+                    animeDetails.title.english || animeDetails.title.romaji,
+            });
+        } catch (error) {
+            console.log("Could not save this search to history.");
+            console.error(error.message);
+        }
 
         displayAnimeDetails(animeDetails);
     } catch (error) {
@@ -306,7 +311,7 @@ async function main() {
                 break;
 
             case "history":
-                console.log("Search history feature coming soon!");
+                await searchHistoryFlow();
                 break;
 
             case "exit":

@@ -1,11 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const historyFile = path.join(__dirname, "history.json");
+const historyFile = process.env.ANIME_HISTORY_FILE || path.join(__dirname, "history.json");
 
 export async function getSearchHistory() {
     try {
@@ -20,17 +19,26 @@ export async function getSearchHistory() {
     }
 }
 
-export async function addToHistory(entry) {
-    const history = await getSearchHistory();
 
-    history.push({
-        ...entry,
-        searchedAt: new Date().toISOString(),
+let writeQueue = Promise.resolve();
+
+export function addToHistory(entry) {
+    const update = writeQueue.then(async () => {
+        const history = await getSearchHistory();
+
+        history.push({
+            ...entry,
+            searchedAt: new Date().toISOString(),
+        });
+
+        await fs.writeFile(
+            historyFile,
+            JSON.stringify(history, null, 4),
+            "utf-8"
+        );
     });
 
-    await fs.writeFile(
-        historyFile,
-        JSON.stringify(history, null, 4),
-        "utf-8"
-    );
+    writeQueue = update.catch(() => {});
+
+    return update;
 }
