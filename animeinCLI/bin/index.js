@@ -8,7 +8,6 @@ import { searchAnime, getAnimeDetails, getTopAnime } from "../src/api/animeApi.j
 function displayAnimeDetails(animeDetails) {
     const selectedTitle =
         animeDetails.title.english || animeDetails.title.romaji;
-
     const statusMap = {
         FINISHED: "Finished",
         RELEASING: "Currently Airing",
@@ -16,25 +15,20 @@ function displayAnimeDetails(animeDetails) {
         CANCELLED: "Cancelled",
         HIATUS: "On Hiatus",
     };
-
     const formatDate = (date) => {
         if (!date.year) {
             return "Unknown";
         }
-
         const parts = [date.year];
-
         if (date.month) {
             parts.push(String(date.month).padStart(2, "0"));
         }
-
         if (date.day) {
             parts.push(String(date.day).padStart(2, "0"));
         }
 
         return parts.join("-");
     };
-
     const startDate = formatDate(animeDetails.startDate);
     const endDate = formatDate(animeDetails.endDate);
 
@@ -42,7 +36,6 @@ function displayAnimeDetails(animeDetails) {
         endDate === "Unknown"
             ? `${startDate} - ?`
             : `${startDate} - ${endDate}`;
-
     const score =
         animeDetails.averageScore === null
             ? "Not rated"
