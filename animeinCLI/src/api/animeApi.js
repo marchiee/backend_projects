@@ -1,3 +1,5 @@
+import { getCache, setCache } from "../storage/cache.js";
+
 const searchQuery = `
   query ($search: String) {
     Page(perPage: 10) {
@@ -81,6 +83,11 @@ const topAnimeQuery = `
 
 
 export async function searchAnime(search) {
+  const cacheKey = `search:${search.toLowerCase().trim()}`;
+  const cachedResults = await getCache(cacheKey);
+  if (cachedResults) {
+    return cachedResults;
+  }
   const response = await fetch("https://graphql.anilist.co", {
     method: "POST",
     headers: {
@@ -95,16 +102,26 @@ export async function searchAnime(search) {
     }),
   });
 
+
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status}`);
   }
 
   const result = await response.json();
+  await setCache(cacheKey, result.data.Page.media, 600000);
 
   return result.data.Page.media;
 }
 
 export async function getAnimeDetails(id) {
+  const cacheKey = `details:${id}`;
+
+  const cachedDetails = await getCache(cacheKey);
+
+  if (cachedDetails) {
+    return cachedDetails;
+  }
+
   const response = await fetch("https://graphql.anilist.co", {
     method: "POST",
     headers: {
@@ -125,11 +142,27 @@ export async function getAnimeDetails(id) {
 
   const result = await response.json();
 
-  return result.data.Media;
+  if (result.errors?.length) {
+    throw new Error(result.errors[0].message);
+  }
+
+  const animeDetails = result.data.Media;
+
+  await setCache(cacheKey, animeDetails, 3600000);
+
+  return animeDetails;
 }
 
 
 export async function getTopAnime(sort) {
+    const cacheKey = `top:${sort}`;
+
+    const cachedResults = await getCache(cacheKey);
+
+    if (cachedResults) {
+        return cachedResults;
+    }
+
     const response = await fetch("https://graphql.anilist.co", {
         method: "POST",
         headers: {
@@ -154,5 +187,9 @@ export async function getTopAnime(sort) {
         throw new Error(result.errors[0].message);
     }
 
-    return result.data.Page.media;
+    const animeList = result.data.Page.media;
+
+    await setCache(cacheKey, animeList, 600000);
+
+    return animeList;
 }

@@ -16,5 +16,23 @@
         "animeId": 160515,
         "animeTitle": "OVERTAKE!",
         "searchedAt": "2026-10-05T18:25:02.669Z"
+    },
+    {
+        "query": "naruto",
+        "animeId": 155348,
+        "animeTitle": "ROAD OF NARUTO",
+        "searchedAt": "2026-10-05T20:43:23.127Z"
+    },
+    {
+        "query": "death note",
+        "animeId": 1535,
+        "animeTitle": "Death Note",
+        "searchedAt": "2026-10-05T20:43:52.793Z"
+    },
+    {
+        "query": "naruto",
+        "animeId": 20,
+        "animeTitle": "Naruto",
+        "searchedAt": "2026-10-05T20:46:12.299Z"
     }
 ]
