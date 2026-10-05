@@ -72,9 +72,9 @@ Next steps:
         
 3. make each menu option work properly (done)
         
-4. search history
+4. search history (done)
 
-5. will add cache and connect with history file
+5. will add cache and connect with history file (done)
         
 6. error handling + UI polish
         

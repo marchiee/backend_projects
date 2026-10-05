@@ -1,1 +1,20 @@
-[]
+[
+    {
+        "query": "overtake",
+        "animeId": 160515,
+        "animeTitle": "OVERTAKE!",
+        "searchedAt": "2026-10-04T21:41:53.259Z"
+    },
+    {
+        "query": "demon slayer",
+        "animeId": 178788,
+        "animeTitle": "Demon Slayer: Kimetsu no Yaiba Infinity Castle",
+        "searchedAt": "2026-10-04T21:42:11.319Z"
+    },
+    {
+        "query": "overtake",
+        "animeId": 160515,
+        "animeTitle": "OVERTAKE!",
+        "searchedAt": "2026-10-05T18:25:02.669Z"
+    }
+]
