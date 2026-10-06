@@ -1,4 +1,4 @@
-# animecli
+# anifind
 
 A simple command-line tool for discovering anime and finding where to watch them.
 
@@ -30,4 +30,4 @@ A simple command-line tool for discovering anime and finding where to watch them
 Make sure you have Node.js installed.
 
 ```bash
-npm install -g animecli
+npm install -g anifind

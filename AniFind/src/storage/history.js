@@ -22,6 +22,7 @@ export async function getSearchHistory() {
     }
 }
 
+// keeps multiple history updates from overwriting each other
 let writeQueue = Promise.resolve();
 
 export function addToHistory(entry) {

@@ -2,6 +2,7 @@ import { getCache, setCache } from "../storage/cache.js";
 
 const API_URL = "https://graphql.anilist.co";
 
+// gets basic information for the search results
 const searchQuery = `
     query ($search: String) {
         Page(perPage: 10) {
@@ -20,6 +21,7 @@ const searchQuery = `
     }
 `;
 
+// gets full details after the user selects an anime
 const detailsQuery = `
     query ($id: Int) {
         Media(id: $id, type: ANIME) {
@@ -53,6 +55,7 @@ const detailsQuery = `
     }
 `;
 
+// gets anime lists based on the selected ranking
 const topAnimeQuery = `
     query ($sort: [MediaSort]) {
         Page(perPage: 10) {
@@ -98,6 +101,7 @@ async function makeRequest(query, variables) {
 
     const result = await response.json();
 
+    // graphql can return errors even when the request itself succeeds
     if (result.errors?.length) {
         throw new Error(result.errors[0].message);
     }
@@ -120,6 +124,7 @@ export async function searchAnime(search) {
 
     const results = data.Page.media;
 
+    // cache search results for 10 minutes
     try {
         await setCache(cacheKey, results, 600000);
     } catch {
@@ -143,6 +148,7 @@ export async function getAnimeDetails(id) {
 
     const animeDetails = data.Media;
 
+    // cache anime details for 1 hour
     try {
         await setCache(cacheKey, animeDetails, 3600000);
     } catch {
@@ -166,6 +172,7 @@ export async function getTopAnime(sort) {
 
     const animeList = data.Page.media;
 
+    // cache ranking results for 10 minutes
     try {
         await setCache(cacheKey, animeList, 600000);
     } catch {

@@ -1,15 +1,8 @@
 #!/usr/bin/env node
 
 import { askQuestion, selectOption } from "../src/ui/prompts.js";
-import {
-    searchAnime,
-    getAnimeDetails,
-    getTopAnime,
-} from "../src/api/animeApi.js";
-import {
-    addToHistory,
-    getSearchHistory,
-} from "../src/storage/history.js";
+import { searchAnime, getAnimeDetails, getTopAnime } from "../src/api/animeApi.js";
+import { addToHistory, getSearchHistory } from "../src/storage/history.js";
 
 const LINE = "========================================";
 
@@ -68,11 +61,12 @@ function displayAnimeDetails(animeDetails) {
     const status =
         statusMap[animeDetails.status] || animeDetails.status;
 
+    // anilist returns the story with html tags, so clean them before displaying it
     const description = animeDetails.description
         ? animeDetails.description
-              .replace(/<br\s*\/?>/gi, "\n")
-              .replace(/<[^>]*>/g, "")
-              .trim()
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/<[^>]*>/g, "")
+            .trim()
         : "No synopsis available.";
 
     displayHeader(selectedTitle);
@@ -82,7 +76,6 @@ function displayAnimeDetails(animeDetails) {
     console.log(`Episodes  : ${episodes}`);
     console.log(`Status    : ${status}`);
     console.log(`Aired     : ${aired}`);
-
     console.log("");
     console.log("Genres");
     console.log("----------------------------------------");
@@ -94,16 +87,15 @@ function displayAnimeDetails(animeDetails) {
     } else {
         console.log("No genres available.");
     }
-
     console.log("");
     console.log("Story");
     console.log("----------------------------------------");
     console.log(description);
-
     console.log("");
     console.log("Where to Watch");
     console.log("----------------------------------------");
 
+    // only show links marked as streaming by the api
     const streamingLinks =
         animeDetails.externalLinks?.filter(
             (link) => link.type === "STREAMING"
@@ -131,7 +123,6 @@ async function searchAnimeFlow() {
         console.log("Please enter an anime name.");
         return;
     }
-
     console.log("");
     console.log(`Searching for "${searchQuery}"...`);
 
@@ -144,8 +135,8 @@ async function searchAnimeFlow() {
             return;
         }
 
+        // keep the result list short and easy to navigate
         const displayedResults = results.slice(0, 10);
-
         console.log("");
         console.log(`Found ${displayedResults.length} results.`);
 
@@ -153,9 +144,8 @@ async function searchAnimeFlow() {
             "Select an anime:",
             [
                 ...displayedResults.map((anime, index) => ({
-                    name: `${index + 1}. ${
-                        anime.title.english || anime.title.romaji
-                    } (${anime.startDate.year || "Unknown"})`,
+                    name: `${index + 1}. ${anime.title.english || anime.title.romaji
+                        } (${anime.startDate.year || "Unknown"})`,
                     value: anime,
                 })),
                 {
@@ -168,12 +158,12 @@ async function searchAnimeFlow() {
         if (selectedAnime === null) {
             return;
         }
-
         console.log("");
         console.log("Loading anime details...");
 
         const animeDetails = await getAnimeDetails(selectedAnime.id);
 
+        // history should not stop the user from viewing anime details
         try {
             await addToHistory({
                 query: searchQuery,
@@ -233,7 +223,6 @@ async function topAnimeFlow() {
                 console.log("No anime found.");
                 continue;
             }
-
             console.log("");
             console.log(`Found ${results.length} anime.`);
 
@@ -241,13 +230,11 @@ async function topAnimeFlow() {
                 "Select an anime:",
                 [
                     ...results.map((anime, index) => ({
-                        name: `${index + 1}. ${
-                            anime.title.english || anime.title.romaji
-                        } (${anime.startDate.year || "Unknown"}) - ${
-                            anime.averageScore === null
+                        name: `${index + 1}. ${anime.title.english || anime.title.romaji
+                            } (${anime.startDate.year || "Unknown"}) - ${anime.averageScore === null
                                 ? "Not rated"
                                 : `${anime.averageScore / 10}/10`
-                        }`,
+                            }`,
                         value: anime,
                     })),
                     {
@@ -266,6 +253,7 @@ async function topAnimeFlow() {
 
             const animeDetails = await getAnimeDetails(selectedAnime.id);
 
+            // top anime selections are not added to search history
             displayAnimeDetails(animeDetails);
 
             return;
@@ -289,6 +277,7 @@ async function searchHistoryFlow() {
 
         displayHeader("Search History");
 
+        // show the most recent searches first
         [...history].reverse().forEach((entry, index) => {
             console.log(`${index + 1}. ${entry.animeTitle}`);
             console.log(`   Search : ${entry.query}`);

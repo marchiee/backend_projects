@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const cacheFile = path.join(__dirname, "cache.json");
 
+// keeps cache file operations in order
 let cacheQueue = Promise.resolve();
 
 async function readCache() {
@@ -39,6 +40,7 @@ export function getCache(key) {
             return null;
         }
 
+        // remove old data instead of returning expired results
         if (Date.now() > entry.expiresAt) {
             delete cache[key];
             await writeCache(cache);
@@ -59,6 +61,7 @@ export function setCache(key, data, ttl) {
 
         cache[key] = {
             data,
+            // ttl is given in milliseconds
             expiresAt: Date.now() + ttl,
         };
 

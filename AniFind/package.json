@@ -1,8 +1,8 @@
 {
-  "name": "animecli",
+  "name": "anifind",
   "version": "1.0.0",
   "bin": {
-    "anime": "./bin/index.js"
+    "anime": "bin/index.js"
   },
   "scripts": {
     "start": "node ./bin/index.js"

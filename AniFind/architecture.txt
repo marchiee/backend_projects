@@ -80,5 +80,13 @@ Next steps:
         
 7. readme + npm publishing
 
-in future : >open streaming provider
-            >add "top anime based on genre"
+Future
+
+8. open streaming provider
+   - open the selected streaming URL directly
+
+9. top anime by genre
+   - browse rankings for a selected genre
+
+10. streaming episodes
+    - explore individual available episodes
