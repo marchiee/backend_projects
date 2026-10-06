@@ -1,5 +1,5 @@
 {
-  "name": "animeincli",
+  "name": "animecli",
   "version": "1.0.0",
   "bin": {
     "anime": "./bin/index.js"
