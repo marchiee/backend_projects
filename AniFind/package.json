@@ -1,6 +1,6 @@
 {
-  "name": "anifind",
-  "version": "1.0.0",
+  "name": "@marchiee/anifind",
+  "version": "1.0.1",
   "bin": {
     "anime": "bin/index.js"
   },
