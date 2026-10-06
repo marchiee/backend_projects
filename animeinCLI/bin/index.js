@@ -1,14 +1,29 @@
 #!/usr/bin/env node
 
 import { askQuestion, selectOption } from "../src/ui/prompts.js";
-import { searchAnime, getAnimeDetails, getTopAnime } from "../src/api/animeApi.js";
-import { addToHistory, getSearchHistory } from "../src/storage/history.js";
+import {
+    searchAnime,
+    getAnimeDetails,
+    getTopAnime,
+} from "../src/api/animeApi.js";
+import {
+    addToHistory,
+    getSearchHistory,
+} from "../src/storage/history.js";
 
-//function to display anime
+const LINE = "========================================";
+
+function displayHeader(title) {
+    console.log("");
+    console.log(LINE);
+    console.log(`              ${title}`);
+    console.log(LINE);
+}
 
 function displayAnimeDetails(animeDetails) {
     const selectedTitle =
         animeDetails.title.english || animeDetails.title.romaji;
+
     const statusMap = {
         FINISHED: "Finished",
         RELEASING: "Currently Airing",
@@ -16,20 +31,25 @@ function displayAnimeDetails(animeDetails) {
         CANCELLED: "Cancelled",
         HIATUS: "On Hiatus",
     };
+
     const formatDate = (date) => {
-        if (!date.year) {
+        if (!date?.year) {
             return "Unknown";
         }
+
         const parts = [date.year];
+
         if (date.month) {
             parts.push(String(date.month).padStart(2, "0"));
         }
+
         if (date.day) {
             parts.push(String(date.day).padStart(2, "0"));
         }
 
         return parts.join("-");
     };
+
     const startDate = formatDate(animeDetails.startDate);
     const endDate = formatDate(animeDetails.endDate);
 
@@ -37,6 +57,7 @@ function displayAnimeDetails(animeDetails) {
         endDate === "Unknown"
             ? `${startDate} - ?`
             : `${startDate} - ${endDate}`;
+
     const score =
         animeDetails.averageScore === null
             ? "Not rated"
@@ -49,34 +70,39 @@ function displayAnimeDetails(animeDetails) {
 
     const description = animeDetails.description
         ? animeDetails.description
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/<[^>]*>/g, "")
+              .replace(/<br\s*\/?>/gi, "\n")
+              .replace(/<[^>]*>/g, "")
+              .trim()
         : "No synopsis available.";
 
-    console.log("");
-    console.log("========================================");
-    console.log(selectedTitle);
-    console.log("========================================");
+    displayHeader(selectedTitle);
 
     console.log("");
-    console.log(`>> Score: ${score}`);
-    console.log(`>> Episodes: ${episodes}`);
-    console.log(`>> Status: ${status}`);
-    console.log(`>> Aired: ${aired}`);
+    console.log(`Score     : ${score}`);
+    console.log(`Episodes  : ${episodes}`);
+    console.log(`Status    : ${status}`);
+    console.log(`Aired     : ${aired}`);
 
     console.log("");
-    console.log("Genres:");
+    console.log("Genres");
+    console.log("----------------------------------------");
 
-    animeDetails.genres.forEach((genre) => {
-        console.log(`• ${genre}`);
-    });
+    if (animeDetails.genres?.length) {
+        animeDetails.genres.forEach((genre) => {
+            console.log(`- ${genre}`);
+        });
+    } else {
+        console.log("No genres available.");
+    }
 
     console.log("");
-    console.log("Story:");
+    console.log("Story");
+    console.log("----------------------------------------");
     console.log(description);
 
     console.log("");
-    console.log("Where to Watch:");
+    console.log("Where to Watch");
+    console.log("----------------------------------------");
 
     const streamingLinks =
         animeDetails.externalLinks?.filter(
@@ -87,47 +113,64 @@ function displayAnimeDetails(animeDetails) {
         console.log("No streaming platforms found.");
     } else {
         streamingLinks.forEach((link) => {
-            console.log("");
-            console.log(`- ${link.site}:`);
+            console.log(`- ${link.site}`);
             console.log(`  ${link.url}`);
         });
     }
-}
-
-//function for anime search
-
-async function searchAnimeFlow() {
-    const searchQuery = await askQuestion("Which anime are you looking for? ");
 
     console.log("");
-    console.log("Searching...");
+}
+
+async function searchAnimeFlow() {
+    const searchQuery = (
+        await askQuestion("Which anime are you looking for?")
+    ).trim();
+
+    if (!searchQuery) {
+        console.log("");
+        console.log("Please enter an anime name.");
+        return;
+    }
+
+    console.log("");
+    console.log(`Searching for "${searchQuery}"...`);
 
     try {
         const results = await searchAnime(searchQuery);
 
-        console.log("");
-
         if (results.length === 0) {
+            console.log("");
             console.log("No anime found.");
             return;
         }
 
         const displayedResults = results.slice(0, 10);
 
-        console.log(`Found ${displayedResults.length} results.`);
         console.log("");
+        console.log(`Found ${displayedResults.length} results.`);
 
         const selectedAnime = await selectOption(
-            "Which one do you want?",
-            displayedResults.map((anime, index) => ({
-                name: `${index + 1}. ${anime.title.english || anime.title.romaji
+            "Select an anime:",
+            [
+                ...displayedResults.map((anime, index) => ({
+                    name: `${index + 1}. ${
+                        anime.title.english || anime.title.romaji
                     } (${anime.startDate.year || "Unknown"})`,
-                value: anime,
-            }))
+                    value: anime,
+                })),
+                {
+                    name: "Back to Main Menu",
+                    value: null,
+                },
+            ]
         );
 
+        if (selectedAnime === null) {
+            return;
+        }
+
         console.log("");
-        console.log("Getting anime details...");
+        console.log("Loading anime details...");
 
         const animeDetails = await getAnimeDetails(selectedAnime.id);
 
@@ -136,28 +179,25 @@ async function searchAnimeFlow() {
                 query: searchQuery,
                 animeId: selectedAnime.id,
                 animeTitle:
-                    animeDetails.title.english || animeDetails.title.romaji,
+                    animeDetails.title.english ||
+                    animeDetails.title.romaji,
             });
-        } catch (error) {
-            console.log("Could not save this search to history.");
-            console.error(error.message);
+        } catch {
+            console.log("Warning: Could not save this search to history.");
         }
 
         displayAnimeDetails(animeDetails);
     } catch (error) {
         console.log("");
-        console.log("Something went wrong.");
-        console.error(error.message);
+        console.log("Unable to complete the search.");
+        console.log(`Reason: ${error.message}`);
     }
 }
-
-
-
 
 async function topAnimeFlow() {
     while (true) {
         const choice = await selectOption(
-            "What kind of anime list would you like?",
+            "Choose a ranking:",
             [
                 {
                     name: "Top Rated Anime",
@@ -184,32 +224,34 @@ async function topAnimeFlow() {
 
         try {
             console.log("");
-            console.log("Fetching anime list...");
+            console.log("Loading anime list...");
 
             const results = await getTopAnime(choice);
 
             if (results.length === 0) {
+                console.log("");
                 console.log("No anime found.");
                 continue;
             }
 
             console.log("");
             console.log(`Found ${results.length} anime.`);
-            console.log("");
 
             const selectedAnime = await selectOption(
-                "Choose an anime to view its details:",
+                "Select an anime:",
                 [
                     ...results.map((anime, index) => ({
-                        name: `${index + 1}. ${anime.title.english || anime.title.romaji
-                            } (${anime.startDate.year || "Unknown"}) - ${anime.averageScore === null
+                        name: `${index + 1}. ${
+                            anime.title.english || anime.title.romaji
+                        } (${anime.startDate.year || "Unknown"}) - ${
+                            anime.averageScore === null
                                 ? "Not rated"
                                 : `${anime.averageScore / 10}/10`
-                            }`,
+                        }`,
                         value: anime,
                     })),
                     {
-                        name: "Back to ranking menu",
+                        name: "Back to Ranking Menu",
                         value: null,
                     },
                 ]
@@ -220,7 +262,7 @@ async function topAnimeFlow() {
             }
 
             console.log("");
-            console.log("Getting anime details...");
+            console.log("Loading anime details...");
 
             const animeDetails = await getAnimeDetails(selectedAnime.id);
 
@@ -229,50 +271,41 @@ async function topAnimeFlow() {
             return;
         } catch (error) {
             console.log("");
-            console.log("Something went wrong.");
-            console.error(error.message);
+            console.log("Unable to load the anime list.");
+            console.log(`Reason: ${error.message}`);
         }
     }
 }
-
-
-
 
 async function searchHistoryFlow() {
     try {
         const history = await getSearchHistory();
 
-        console.log("");
-
         if (history.length === 0) {
+            console.log("");
             console.log("Your search history is empty.");
             return;
         }
 
-        console.log("===================================");
-        console.log("           Search History");
-        console.log("===================================");
-        console.log("");
+        displayHeader("Search History");
 
-        history.forEach((entry, index) => {
+        [...history].reverse().forEach((entry, index) => {
+            console.log(`${index + 1}. ${entry.animeTitle}`);
+            console.log(`   Search : ${entry.query}`);
             console.log(
-                `${index + 1}. ${entry.animeTitle} (Searched: ${entry.query})`
+                `   Date   : ${new Date(entry.searchedAt).toLocaleString()}`
             );
-            console.log(`   Date: ${new Date(entry.searchedAt).toLocaleString()}`);
             console.log("");
         });
     } catch (error) {
-        console.log("Could not retrieve search history.");
-        console.error(error.message);
+        console.log("");
+        console.log("Unable to load search history.");
+        console.log(`Reason: ${error.message}`);
     }
 }
 
-
 async function main() {
-    console.log("");
-    console.log("===================================");
-    console.log("           Anime CLI ^ ^");
-    console.log("===================================");
+    displayHeader("Anime CLI");
 
     while (true) {
         console.log("");
@@ -281,15 +314,15 @@ async function main() {
             "What would you like to do?",
             [
                 {
-                    name: "Search anime",
+                    name: "Search Anime",
                     value: "search",
                 },
                 {
-                    name: "Top anime",
+                    name: "Top Anime",
                     value: "top",
                 },
                 {
-                    name: "Search history",
+                    name: "Search History",
                     value: "history",
                 },
                 {
@@ -315,7 +348,7 @@ async function main() {
                 break;
 
             case "exit":
-                console.log("Thanks for using Anime CLI! ^ ^");
+                console.log("Thanks for using Anime CLI.");
                 return;
         }
     }

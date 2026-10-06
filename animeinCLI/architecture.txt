@@ -76,7 +76,7 @@ Next steps:
 
 5. will add cache and connect with history file (done)
         
-6. error handling + UI polish
+6. error handling + UI polish (done)
         
 7. readme + npm publishing
 

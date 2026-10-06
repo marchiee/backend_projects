@@ -7,11 +7,32 @@ const __dirname = path.dirname(__filename);
 
 const cacheFile = path.join(__dirname, "cache.json");
 
-export async function getCache(key) {   /*key -> the cache needs a way to distinguish one cached piece of data from another(example "search:naruto")*/
+let cacheQueue = Promise.resolve();
+
+async function readCache() {
     try {
         const data = await fs.readFile(cacheFile, "utf-8");
-        const cache = JSON.parse(data);
+        return JSON.parse(data);
+    } catch (error) {
+        if (error.code === "ENOENT") {
+            return {};
+        }
 
+        throw error;
+    }
+}
+
+async function writeCache(cache) {
+    await fs.writeFile(
+        cacheFile,
+        JSON.stringify(cache, null, 4),
+        "utf-8"
+    );
+}
+
+export function getCache(key) {
+    const operation = cacheQueue.then(async () => {
+        const cache = await readCache();
         const entry = cache[key];
 
         if (!entry) {
@@ -20,46 +41,31 @@ export async function getCache(key) {   /*key -> the cache needs a way to distin
 
         if (Date.now() > entry.expiresAt) {
             delete cache[key];
-
-            await fs.writeFile(
-                cacheFile,
-                JSON.stringify(cache, null, 4),
-                "utf-8"
-            );
-
+            await writeCache(cache);
             return null;
         }
 
         return entry.data;
-    } catch (error) {
-        if (error.code === "ENOENT") {
-            return null;
-        }
+    });
 
-        throw error;
-    }
+    cacheQueue = operation.catch(() => {});
+
+    return operation;
 }
 
-export async function setCache(key, data, ttl) {
-    let cache = {};
+export function setCache(key, data, ttl) {
+    const operation = cacheQueue.then(async () => {
+        const cache = await readCache();
 
-    try {
-        const fileData = await fs.readFile(cacheFile, "utf-8");
-        cache = JSON.parse(fileData);
-    } catch (error) {
-        if (error.code !== "ENOENT") {
-            throw error;
-        }
-    }
+        cache[key] = {
+            data,
+            expiresAt: Date.now() + ttl,
+        };
 
-    cache[key] = {
-        data,
-        expiresAt: Date.now() + ttl,
-    };
+        await writeCache(cache);
+    });
 
-    await fs.writeFile(
-        cacheFile,
-        JSON.stringify(cache, null, 4),
-        "utf-8"
-    );
+    cacheQueue = operation.catch(() => {});
+
+    return operation;
 }

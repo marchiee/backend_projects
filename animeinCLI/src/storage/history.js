@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const historyFile = process.env.ANIME_HISTORY_FILE || path.join(__dirname, "history.json");
+const historyFile =
+    process.env.ANIME_HISTORY_FILE ||
+    path.join(__dirname, "history.json");
 
 export async function getSearchHistory() {
     try {
@@ -19,7 +21,6 @@ export async function getSearchHistory() {
         throw error;
     }
 }
-
 
 let writeQueue = Promise.resolve();
 
